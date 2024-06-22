@@ -40,7 +40,7 @@ class UrlController extends Controller
                         'posts.id',
                         'urls.path',
                         'posts.title',
-                        'authors.name',
+                        'authors.name as author_name',
                         'authors.avatar_image_id',
                         'urls.created_at',
                     ]);
@@ -50,6 +50,7 @@ class UrlController extends Controller
                         "25x25" => "https://images.necodeo.com/{$post->avatar_image_id}/25x25",
                         "50x50" => "https://images.necodeo.com/{$post->avatar_image_id}/50x50",
                     ];
+                    unset($post->avatar_image_id);
                 }
 
                 unset($post);
