@@ -16,8 +16,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
-          extensions: mbstring, intl, pdo_mysql, xml, openswoole
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_mysql, xml
 
       - name: Install Composer
         run: |
