@@ -1,20 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/initial-url-data', function () {
-    $timerStart = microtime(true);
+use App\Http\Controllers\UrlController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\EmotionController;
 
-    // db query to get data
-    $users = DB::table('users')->get();
+Route::get('/initial-url-data', UrlController::class . '@single');
 
-    $timerStop = microtime(true);
+Route::get('/api/comments', CommentController::class . '@get');
+Route::post('/api/comments', CommentController::class . '@add');
 
-    $diff = $timerStop - $timerStart;
-
-    return response()->json([
-        'message' => 'Hello, World!',
-        'time' => $diff,
-    ]);
-});
+Route::post('/api/emotions[/]', EmotionController::class . '@add');
