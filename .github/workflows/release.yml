@@ -34,7 +34,7 @@ jobs:
           node-version: '20.x'
 
       - name: Setup Environment Variables for Artifacts
-        run: echo "ARCHIVE_NAME=production_output_$(date +%s).tar.gz" >> $GITHUB_ENV
+        run: echo "ARCHIVE_NAME=master_$(date +%Y%m%d_%H%M%S).tar.gz" >> $GITHUB_ENV
 
       - name: Archive Built Output
         run: |
