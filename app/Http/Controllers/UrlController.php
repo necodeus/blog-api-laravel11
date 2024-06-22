@@ -32,9 +32,28 @@ class UrlController extends Controller
             // HOME PAGE DATA
             case 'INDEX': {
                 $posts = DB::table('posts')
-                    ->orderBy('created_at', 'desc')
+                    ->join('urls', 'posts.id', '=', 'urls.content_id')
+                    ->join('authors', 'posts.editor_account_id', '=', 'authors.id')
+                    ->orderBy('urls.created_at', 'desc')
                     ->limit(10)
-                    ->get();
+                    ->get([
+                        'posts.id',
+                        'urls.path',
+                        'posts.title',
+                        'authors.name',
+                        'authors.avatar_image_id',
+                        'urls.created_at',
+                    ]);
+
+                foreach ($posts as &$post) {
+                    $post->author_picture = [
+                        "25x25" => "https://images.necodeo.com/{$post->avatar_image_id}/25x25",
+                        "50x50" => "https://images.necodeo.com/{$post->avatar_image_id}/50x50",
+                    ];
+                }
+
+                unset($post);
+
                 $data = [
                     'posts' => $posts,
                 ];
