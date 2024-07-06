@@ -100,7 +100,7 @@ class UrlController extends Controller
 
                 $postAuthor->author_picture = [
                     "25x25" => "https://images.necodeo.com/{$postAuthor->avatar_image_id}/25x25",
-                    "50x50" => "https://images.necodeo.com/{$postAuthor->avatar_image_id}/50x50",
+                    "55x55" => "https://images.necodeo.com/{$postAuthor->avatar_image_id}/55x55",
                 ];
 
                 unset($post->main_image_id);
