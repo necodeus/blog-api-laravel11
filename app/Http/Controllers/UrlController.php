@@ -85,12 +85,18 @@ class UrlController extends Controller
                     ]);
 
                 $postAuthor = DB::table('authors')
-                    ->where('id', '=', $post->editor_account_id)
+                    ->leftJoin('urls', function ($join) {
+                        $join->on('authors.id', '=', 'urls.content_id')
+                            ->where('urls.content_type', '=', 'AUTHOR')
+                            ->where('urls.language', '=', 'pl');
+                    })
+                    ->where('authors.id', '=', $post->editor_account_id)
                     ->first([
-                        'id',
-                        'name',
-                        'avatar_image_id',
-                        'bio',
+                        'authors.id',
+                        'urls.path',
+                        'authors.name',
+                        'authors.avatar_image_id',
+                        'authors.bio',
                     ]);
 
                 $post->cover_picture = [
