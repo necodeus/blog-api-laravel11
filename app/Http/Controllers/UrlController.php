@@ -101,7 +101,7 @@ class UrlController extends Controller
 
                 $post->cover_picture = [
                     "1200x430" => "https://images.necodeo.com/{$post->main_image_id}/1200x430",
-                    "900x430" => "https://images.necodeo.com/{$post->main_image_id}/900x430",
+                    "785x420" => "https://images.necodeo.com/{$post->main_image_id}/785x420",
                 ];
 
                 $postAuthor->author_picture = [
