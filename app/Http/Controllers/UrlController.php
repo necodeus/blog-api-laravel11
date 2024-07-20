@@ -12,12 +12,10 @@ class UrlController extends Controller
     {
         $start = microtime(true);
 
-        // check if path is provided
         $url = DB::table('urls')
             ->where('path', '=', $request->input('path'))
             ->first();
 
-        // return error if path not found
         if (!$url) {
             return response()->json([
                 'time' => microtime(true) - $start,
@@ -27,10 +25,8 @@ class UrlController extends Controller
 
         $data = [];
 
-        // get data based on content type
         switch ($url->content_type) {
-            // HOME PAGE DATA
-            case 'INDEX': {
+            case 'POSTS': {
                 $posts = DB::table('posts')
                     ->join('urls', function ($join) {
                         $join->on('posts.id', '=', 'urls.content_id')
@@ -71,7 +67,6 @@ class UrlController extends Controller
 
                 break;
             }
-            // BLOG POST DATA
             case 'POST': {
                 $post = DB::table('posts')
                     ->where('id', '=', $url->content_id)
@@ -133,36 +128,7 @@ class UrlController extends Controller
 
                 break;
             }
-            // CATEGORY_POSTS_INDEX
-            // TODO: Zweryfikować!
-            case 'CATEGORY_POSTS_INDEX': {
-                $categorySlug = $request->input('categorySlug');
-
-                $categoryPosts = DB::table('posts')
-                    ->join('urls', 'posts.id', '=', 'urls.content_id')
-                    ->join('authors', 'posts.editor_account_id', '=', 'authors.id')
-                    ->join('post_categories', 'posts.id', '=', 'post_categories.post_id')
-                    ->join('categories', 'post_categories.category_id', '=', 'categories.id')
-                    ->where('categories.slug', '=', $categorySlug)
-                    ->orderBy('urls.created_at', 'desc')
-                    ->limit(10)
-                    ->get([
-                        'posts.id',
-                        'urls.path',
-                        'posts.title',
-                        'authors.name as author_name',
-                        'authors.avatar_image_id',
-                        'urls.created_at',
-                    ]);
-
-                $data = [
-                    'categoryPosts' => $categoryPosts,
-                ];
-
-                break;
-            }
-            // AUTHORS INDEX PAGE DATA
-            case 'AUTHORS_INDEX': {
+            case 'AUTHORS': {
                 $authors = DB::table('authors')
                     ->orderBy('name', 'asc')
                     ->limit(10)
