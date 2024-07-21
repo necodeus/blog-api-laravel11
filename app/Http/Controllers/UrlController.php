@@ -130,9 +130,35 @@ class UrlController extends Controller
             }
             case 'AUTHORS': {
                 $authors = DB::table('authors')
+                    ->leftJoin('urls', 'authors.id', '=', 'urls.content_id')
+                    ->where('urls.content_type', '=', 'AUTHOR')
+                    ->where('urls.language', '=', 'pl')
                     ->orderBy('name', 'asc')
                     ->limit(10)
-                    ->get();
+                    ->get([
+                        'authors.id',
+                        'authors.name',
+                        'authors.slug',
+                        'authors.bio',
+                        'authors.avatar_image_id',
+                        'urls.created_at',
+                        'urls.updated_at',
+                        'urls.path',
+                    ]);
+
+                $numberOfPosts = DB::table('posts')
+                    ->select('editor_account_id', DB::raw('count(*) as count'))
+                    ->groupBy('editor_account_id')
+                    ->get()
+                    ->keyBy('editor_account_id');
+
+                foreach ($authors as &$author) {
+                    $author->numberOfPosts = $numberOfPosts->get($author->id)->count ?? 0;
+                }
+
+                unset($author);
+
+                $authors = $authors->sortByDesc('numberOfPosts')->values();
 
                 $data = [
                     'authors' => $authors,
@@ -145,8 +171,33 @@ class UrlController extends Controller
                     ->where('id', '=', $url->content_id)
                     ->first();
 
+                $posts = DB::table('posts')
+                    ->where('publisher_account_id', '=', $author->id)
+                    ->join('urls', 'posts.id', '=', 'urls.content_id')
+                    ->where('urls.content_type', '=', 'POST')
+                    ->where('urls.language', '=', 'pl')
+                    ->orderBy('urls.created_at', 'desc')
+                    ->limit(10)
+                    ->get([
+                        'posts.id',
+                        'posts.title',
+                        'posts.main_image_id',
+                        'urls.path',
+                    ]);
+
+                foreach ($posts as &$post) {
+                    $post->image = "https://images.necodeo.com/{$post->main_image_id}/785x420";
+
+                    $post->tagName = 'EXAMPLE';
+
+                    unset($post->main_image_id);
+                }
+
+                unset($post);
+
                 $data = [
                     'author' => $author,
+                    'posts' => $posts,
                 ];
 
                 break;
