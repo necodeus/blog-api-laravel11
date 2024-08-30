@@ -16,10 +16,39 @@ class UrlController extends Controller
             ->where('path', '=', $request->input('path'))
             ->first();
 
+        $navigation = [
+            [ 
+                "url" => "/",
+                "name" => "Artykuły",
+            ],
+            [
+                "url" => "/autorzy",
+                "name" => "Autorzy",
+            ],
+            [
+                "url" => "/kontakt",
+                "name" => "Kontakt",
+            ],
+        ];
+    
         if (!$url) {
+            $otherPosts = DB::table('posts')
+                ->join('urls', 'posts.id', '=', 'urls.content_id')
+                ->where('urls.content_type', '=', 'POST')
+                ->where('urls.language', '=', 'pl')
+                ->orderBy('urls.created_at', 'desc')
+                ->limit(10)
+                ->get([
+                    'posts.id',
+                    'posts.title',
+                    'urls.path',
+                ]);
+
             return response()->json([
                 'time' => microtime(true) - $start,
                 'url' => $url,
+                'navigation' => $navigation,
+                'otherPosts' => $otherPosts,
             ]);
         }
 
@@ -73,6 +102,7 @@ class UrlController extends Controller
                     ->first([
                         'id',
                         'title',
+                        'teaser',
                         'content',
                         'editor_account_id',
                         'main_image_id',
@@ -181,6 +211,7 @@ class UrlController extends Controller
                     ->get([
                         'posts.id',
                         'posts.title',
+                        'posts.teaser',
                         'posts.main_image_id',
                         'urls.path',
                     ]);
@@ -195,9 +226,46 @@ class UrlController extends Controller
 
                 unset($post);
 
+                $profiles = [
+                    [
+                        'name' => 'LinkedIn',
+                        'link' => 'https://linkedin.com/in/smulewicz',
+                        'image' => '/uploads/linkedin.png',
+                        'description' => 'Odwiedź mój profil zawodowy',
+                    ],
+                    [
+                        'name' => 'GitHub',
+                        'link' => "https://github.com/necodeus",
+                        'image' => '/uploads/github.png',
+                        'description' => 'Stwórz coś ze mną',
+                    ],
+                    [
+                        'name' => 'Spotify',
+                        'link' => 'spotify:user:315k3ny42ukhcrvyocz7xxxc2wn4',
+                        'image' => '/uploads/spotify.png',
+                        'description' => 'Posłuchaj moich playlist',
+                    ],
+                ];
+
+                $songs = [
+                    [
+                        'played_at' => '2021-10-01T20:00:00Z',
+                        'name' => 'Song 1',
+                        'artists' => 'Artist 1',
+                        'images' => [
+                            [
+                                'url' => 'https://via.placeholder.com/150',
+                            ],
+                        ],
+                        'type' => 'history',
+                    ],
+                ];
+
                 $data = [
                     'author' => $author,
                     'posts' => $posts,
+                    'profiles' => $profiles,
+                    'songs' => $songs,
                 ];
 
                 break;
@@ -207,6 +275,7 @@ class UrlController extends Controller
         return response()->json([
             'time' => microtime(true) - $start,
             'url' => $url,
+            'navigation' => $navigation,
             ...$data,
         ]);
     }
