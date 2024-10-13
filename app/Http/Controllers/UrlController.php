@@ -25,10 +25,6 @@ class UrlController extends Controller
                 "url" => "/autorzy",
                 "name" => "Autorzy",
             ],
-            [
-                "url" => "/kontakt",
-                "name" => "Kontakt",
-            ],
         ];
     
         if (!$url) {
