@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('urls', function (Blueprint $table) {
             $table->id();
-            $table->string('path', 1024)->unique();
+            $table->string('path', 191)->unique();
             $table->string('content_type');
             $table->string('content_id')->nullable();
             $table->timestamps();

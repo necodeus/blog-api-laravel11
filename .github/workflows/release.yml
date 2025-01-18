@@ -2,54 +2,68 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - master
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-      - name: setup php
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, intl, pdo_mysql, xml
 
-      - name: setup composer
+      - name: Install Composer
         run: |
           php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
           php composer-setup.php --install-dir=/usr/local/bin --filename=composer
           php -r "unlink('composer-setup.php');"
 
-      - name: install
-        run: |
-          composer install --no-dev --optimize-autoloader
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader
 
-      - name: create release
-        id: cr
-        run: |
-          chmod +x ci/create_release.sh
-          ci/./create_release.sh "${{ secrets.PAT }}" "${{ github.repository }}" "${{ github.ref_name }}"
-          echo "release_id=$(cat release_id)"
-          echo "release_id=$(cat release_id)" >> $GITHUB_OUTPUT
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
 
-      - name: archive
+      - name: Setup Environment Variables for Artifacts
+        run: echo "ARCHIVE_NAME=master_$(date +%Y%m%d_%H%M%S).tar.gz" >> $GITHUB_ENV
+
+      - name: Archive Built Output
+        run: |
+          sleep 1
+          tar -czf ${{ env.ARCHIVE_NAME }} *
+
+      - name: Extract Tag Name
+        id: extract_tag
+        run: |
+          echo "TAG_NAME=${GITHUB_REF##*/}_$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          RELEASE_ID: ${{ steps.cr.outputs.release_id }}
-        run: |
-          cd build
-          tar -czf ../blog-api-laravel11-${{ github.ref_name }}.tar.gz * .??*
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: "[R] ${{ env.TAG_NAME }}"
+          draft: false
+          prerelease: false
 
-      - name: upload
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
         env:
-          RELEASE_ID: ${{ steps.cr.outputs.release_id }}
-        run: |
-          chmod +x ci/upload.sh
-          echo "PAT: ${{ secrets.PAT }}"
-          echo "REPO: ${{ github.repository }}"
-          echo "RELEASE_ID: ${{ env.RELEASE_ID }}"
-          echo "VERSION: ${{ github.ref_name }}"
-          ci/./upload.sh "${{ secrets.PAT }}" "${{ github.repository }}" "${{ env.RELEASE_ID }}" "${{ github.ref_name }}"
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.ARCHIVE_NAME }}
+          asset_name: ${{ env.ARCHIVE_NAME }}
+          asset_content_type: application/gzip
