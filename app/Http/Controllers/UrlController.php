@@ -195,10 +195,19 @@ class UrlController extends Controller
             case 'AUTHOR': {
                 $author = DB::table('authors')
                     ->where('id', '=', $url->content_id)
-                    ->first();
+                    ->first([
+                        'id',
+                        'name',
+                        'slug',
+                        'bio',
+                        'avatar_image_id',
+                        'links',
+                        'created_at',
+                        'updated_at',
+                    ]);
 
                 $posts = DB::table('posts')
-                    ->where('publisher_account_id', '=', $author->id)
+                    ->where('editor_account_id', '=', $author->id)
                     ->join('urls', 'posts.id', '=', 'urls.content_id')
                     ->where('urls.content_type', '=', 'POST')
                     ->where('urls.language', '=', 'pl')
@@ -211,16 +220,6 @@ class UrlController extends Controller
                         'posts.main_image_id',
                         'urls.path',
                     ]);
-
-                foreach ($posts as &$post) {
-                    $post->image = "https://images.necodeo.com/{$post->main_image_id}/785x420";
-
-                    $post->tagName = 'EXAMPLE';
-
-                    unset($post->main_image_id);
-                }
-
-                unset($post);
 
                 // let's hardcode the songs for now
                 $songs = [
@@ -237,19 +236,10 @@ class UrlController extends Controller
                     ],
                 ];
 
-                // let's hardcode the links for now
-                $links = [
-                    [
-                        "href" => "https://dawid.smulewicz.pro",
-                        "text" => "WWW",
-                        "description" => "dawid.smulewicz.pro",
-                    ],
-                ];
-
                 $data = [
                     'author' => $author,
                     'posts' => $posts,
-                    'links' => $links,
+                    'links' => $author->links ? json_decode($author->links) : [],
                     'songs' => $songs,
                 ];
 
