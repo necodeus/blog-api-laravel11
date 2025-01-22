@@ -17,7 +17,7 @@ class UrlController extends Controller
             ->first();
 
         $navigation = [
-            [ 
+            [
                 "url" => "/",
                 "name" => "Artykuły",
             ],
@@ -26,7 +26,7 @@ class UrlController extends Controller
                 "name" => "Autorzy",
             ],
         ];
-    
+
         if (!$url) {
             $otherPosts = DB::table('posts')
                 ->join('urls', 'posts.id', '=', 'urls.content_id')
@@ -222,27 +222,7 @@ class UrlController extends Controller
 
                 unset($post);
 
-                $profiles = [
-                    [
-                        'name' => 'LinkedIn',
-                        'link' => 'https://linkedin.com/in/smulewicz',
-                        'image' => '/uploads/linkedin.png',
-                        'description' => 'Odwiedź mój profil zawodowy',
-                    ],
-                    [
-                        'name' => 'GitHub',
-                        'link' => "https://github.com/necodeus",
-                        'image' => '/uploads/github.png',
-                        'description' => 'Stwórz coś ze mną',
-                    ],
-                    [
-                        'name' => 'Spotify',
-                        'link' => 'spotify:user:315k3ny42ukhcrvyocz7xxxc2wn4',
-                        'image' => '/uploads/spotify.png',
-                        'description' => 'Posłuchaj moich playlist',
-                    ],
-                ];
-
+                // let's hardcode the songs for now
                 $songs = [
                     [
                         'played_at' => '2021-10-01T20:00:00Z',
@@ -257,10 +237,19 @@ class UrlController extends Controller
                     ],
                 ];
 
+                // let's hardcode the links for now
+                $links = [
+                    [
+                        "href" => "https://dawid.smulewicz.pro",
+                        "text" => "WWW",
+                        "description" => "dawid.smulewicz.pro",
+                    ],
+                ];
+
                 $data = [
                     'author' => $author,
                     'posts' => $posts,
-                    'profiles' => $profiles,
+                    'links' => $links,
                     'songs' => $songs,
                 ];
 
