@@ -202,6 +202,8 @@ class UrlController extends Controller
                         'bio',
                         'avatar_image_id',
                         'links',
+                        'spotify_user_id',
+                        'spotify_activity',
                         'created_at',
                         'updated_at',
                     ]);
@@ -221,7 +223,7 @@ class UrlController extends Controller
                         'urls.path',
                     ]);
 
-                // let's hardcode the songs for now
+                // DEPRECATED
                 $songs = [
                     [
                         'played_at' => '2021-10-01T20:00:00Z',
@@ -236,10 +238,17 @@ class UrlController extends Controller
                     ],
                 ];
 
+                $links = $author->links;
+                unset($author->links);
+
+                $spotifyActivity = $author->spotify_activity;
+                unset($author->spotify_activity);
+
                 $data = [
                     'author' => $author,
                     'posts' => $posts,
-                    'links' => $author->links ? json_decode($author->links) : [],
+                    'links' => $links ? json_decode($links) : [],
+                    'spotifyActivity' => $spotifyActivity ? json_decode($spotifyActivity) : [],
                     'songs' => $songs,
                 ];
 

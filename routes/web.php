@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\Spotify\SpotifyController;
+
+Route::get('/spotify/auth', [SpotifyController::class, 'redirectToSpotify'])->name('spotify.auth');
+Route::get('/spotify/callback', [SpotifyController::class, 'handleCallback'])->name('spotify.callback');
