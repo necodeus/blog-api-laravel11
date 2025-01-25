@@ -41,9 +41,11 @@ class SpotifyController extends Controller
             die('Błąd autoryzacji');
         }
 
-        session(['spotify_token' => $token->access_token]);
-
         $spotifyUser = SpotifyService::getCurrentUser($token->access_token);
+
+        if (empty($spotifyUser)) {
+            die('Błąd autoryzacji');
+        }
 
         $existingUser = SpotifyUser::where('user_id', $spotifyUser->id)->first();
 
@@ -53,7 +55,7 @@ class SpotifyController extends Controller
                 'refresh_token' => $token->refresh_token,
                 'scope' => $token->scope,
                 'followers' => $spotifyUser->followers->total,
-                'avatar_url' => $spotifyUser->images[0]->url,
+                'avatar_url' => $spotifyUser->images[0]->url ?? '',
                 'type' => $spotifyUser->type,
                 'token_refreshed_at' => null,
             ]);
@@ -68,7 +70,7 @@ class SpotifyController extends Controller
             'refresh_token' => $token->refresh_token,
             'scope' => $token->scope,
             'followers' => $spotifyUser->followers->total,
-            'avatar_url' => $spotifyUser->images[0]->url,
+            'avatar_url' => $spotifyUser->images[0]->url ?? '',
             'type' => $spotifyUser->type,
             'token_refreshed_at' => null,
         ]);

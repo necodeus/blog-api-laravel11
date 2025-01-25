@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $followers
  * @property string $avatar_url
  * @property string $type
+ * @property string $token_refreshed_at
  */
 class SpotifyUser extends Model
 {

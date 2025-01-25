@@ -100,12 +100,18 @@ class SpotifyService
         return json_decode($response);
     }
 
-    public static function authorizeWithSpotify(string $clientId, string $state, string $redirectUri): RedirectResponse
+    public static function authorizeWithSpotify(string $clientId, string $state, string $redirectUri, array $scope = []): RedirectResponse
     {
-        $scope = implode(' ', [
-            'user-read-recently-played', // poprzednio grany utwór
-            'user-read-playback-state', // stan odtwarzania
-        ]);
+        if (empty($scope)) {
+            $scope = [
+                'user-read-private',
+                'user-read-email',
+                'user-read-recently-played',
+                'user-read-playback-state',
+            ];
+        }
+
+        $scope = implode(' ', $scope);
 
         $url = "https://accounts.spotify.com/authorize?response_type=code&client_id=$clientId&scope=$scope&state=$state&redirect_uri=$redirectUri";
 

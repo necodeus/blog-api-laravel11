@@ -13,7 +13,7 @@ use App\Services\Spotify\SpotifyService;
 
 class GetSpotifyActivitiesCommand extends Command
 {
-    protected $signature = 'spotify:activities {authorId?}';
+    protected $signature = 'spotify:activities';
 
     protected function devices(string $bearerToken)
     {
@@ -107,20 +107,12 @@ class GetSpotifyActivitiesCommand extends Command
 
     public function handle()
     {
-        $authorId = $this->argument('authorId');
+        $authors = DB::table('authors')->whereNotNull('spotify_user_id')->get();
 
-        if (!$authorId) {
-            $authors = DB::table('authors')->whereNotNull('spotify_user_id')->get();
-
-            foreach ($authors as $author) {
-                print "Aktualizacja aktywności dla autora: {$author->name}\n";
-                $this->updateSpotifyActivity($author->id);
-            }
-
-            return;
+        foreach ($authors as $author) {
+            print "Aktualizacja aktywności dla autora: {$author->name}\n";
+            $this->updateSpotifyActivity($author->id);
         }
-
-        $this->updateSpotifyActivity($authorId);
     }
 
     protected function updateSpotifyActivity(string $authorId)
@@ -147,9 +139,20 @@ class GetSpotifyActivitiesCommand extends Command
             return;
         }
 
-        $bearerToken = $spotifyUser->access_token;
-
         try {
+            $bearerToken = $spotifyUser->access_token;
+            $refreshedAt = $spotifyUser->token_refreshed_at;
+
+            if (empty($refreshedAt) || Carbon::parse($refreshedAt)->addSeconds(1800)->isPast()) {
+                $response = SpotifyService::getRefreshToken(env('SPOTIFY_CLIENT_ID'), env('SPOTIFY_CLIENT_SECRET'), $spotifyUser->refresh_token);
+                
+                $spotifyUser->update([
+                    'access_token' => $response->access_token,
+                    'token_refreshed_at' => Carbon::now(),
+                    'scope' => $response->scope,
+                ]);
+            }
+
             $devices = $this->devices($bearerToken);
             $state = $this->state($bearerToken);
             $history = $this->history($bearerToken);
@@ -169,9 +172,6 @@ class GetSpotifyActivitiesCommand extends Command
                 'player' => $player,
             ];
         } catch (Throwable $t) {
-            // TODO refresh token and retry once!
-            // SpotifyService::getRefreshToken(env('SPOTIFY_CLIENT_ID'), env('SPOTIFY_CLIENT_SECRET'), $spotifyUser->refresh_token);
-
             print $t->getMessage();
             logger()->error($t->getMessage());
             return;
